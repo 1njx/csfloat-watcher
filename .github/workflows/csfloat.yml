@@ -1,18 +1,29 @@
 name: CSFloat Watcher
 
 on:
-  workflow_dispatch:        # allow manual runs
+  workflow_dispatch:            # allow manual runs
   schedule:
-    - cron: "*/15 * * * *"  # every 15 minutes (change if you want)
+    - cron: "*/5 * * * *"       # run every 5 minutes
+
+permissions:
+  contents: write               # so we can commit auction_state.json back
 
 jobs:
   run:
     runs-on: ubuntu-latest
     concurrency:
       group: csfloat-watcher
-      cancel-in-progress: true
+      cancel-in-progress: true  # no overlap/spam
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore previous state (if present)
+        run: |
+          if [ -f auction_state.json ]; then
+            echo "State already in repo."
+          else
+            echo "{}" > auction_state.json
+          fi
 
       - uses: actions/setup-python@v5
         with:
@@ -29,3 +40,15 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           SINGLE_PASS: "1"
         run: python watch_csfloat.py
+
+      - name: Commit updated state
+        run: |
+          git config user.name  "csfloat-bot"
+          git config user.email "csfloat-bot@users.noreply.github.com"
+          git add auction_state.json
+          if git diff --cached --quiet; then
+            echo "No state changes."
+          else
+            git commit -m "chore(state): update auction_state.json"
+            git push
+          fi

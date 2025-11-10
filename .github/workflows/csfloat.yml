@@ -3,7 +3,7 @@ name: CSFloat Watcher
 on:
   workflow_dispatch:            # allow manual runs
   schedule:
-    - cron: "*/5 * * * *"       # run every 5 minutes
+    - cron: "*/1 * * * *"       # run every 5 minutes
 
 permissions:
   contents: write               # so we can commit auction_state.json back

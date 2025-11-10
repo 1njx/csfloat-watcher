@@ -171,6 +171,7 @@ def main():
 
     def run_once():
         items = load_watchlist()
+        print(f"[info] items in watchlist: {len(items)}")  # heartbeat for logs
         if not items:
             return
         total_alerts = 0
@@ -188,5 +189,5 @@ def main():
         run_once()
         time.sleep(INTERVAL_S)
 
+if __name__ == "__main__":
     main()
-

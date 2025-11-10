@@ -167,20 +167,26 @@ def main():
     if not os.path.exists(WATCHLIST_FN):
         notify(f"Create {WATCHLIST_FN} (one item per line, exact market_hash_name incl. wear).")
 
-    while True:
+    single_pass = os.getenv("SINGLE_PASS", "0") == "1"
+
+    def run_once():
         items = load_watchlist()
         if not items:
-            time.sleep(INTERVAL_S)
-            continue
-
+            return
         total_alerts = 0
         for name in items:
             total_alerts += process_item(name, seen_ids)
-
         if total_alerts:
             save_seen(seen_ids)
 
+    if single_pass:
+        run_once()
+        return
+
+    # normal loop on your PC
+    while True:
+        run_once()
         time.sleep(INTERVAL_S)
 
-if __name__ == "__main__":
     main()
+
